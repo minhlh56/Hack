@@ -33,7 +33,10 @@ advancing.
 ## How an agent drives this skill
 
 1. Read this file top to bottom once to load the gate model.
-2. Walk the gates **in order** (0 → 7). Do not skip ahead.
+2. Walk the gates in order, but follow the **path your Gate 1 classification
+   selects** — a pure cloud app skips the isolated-lab/decompile gates (3 & 4) by
+   design, and that is *not* "skipping ahead". The rule is: never *advance past* a
+   gate whose exit criteria (and 🔒 confirmation) you have not met.
 3. At the start of each gate, load the matching file in `references/` for the
    detailed checklist and commands (progressive disclosure — don't preload them
    all).
@@ -41,17 +44,28 @@ advancing.
    anything that touches a live target or executes a downloaded installer.
 5. Record findings as you go into a working file (`findings.md`); never keep a
    finding only in chat.
-6. Prefer the helper scripts in `scripts/` over ad-hoc commands so runs are
-   reproducible and the safety defaults (isolation, read-only mounts, offline
+6. Prefer the helper scripts in `"$SKILL/scripts/"` over ad-hoc commands so runs
+   are reproducible and the safety defaults (isolation, read-only mounts, offline
    SAST) are preserved.
 
 ## Tooling bootstrap
 
-Run `scripts/setup_tools.sh --check` first to see which tools are present, and
-`scripts/setup_tools.sh --install` (in your lab, not on a host you care about) to
-fetch the open-source toolchain (7-Zip, jadx, CFR, Procyon, Fernflower, ilspycmd,
-Ghidra, Semgrep, nuclei, httpx, subfinder, trufflehog). The skill degrades
-gracefully: each script checks for its tools and tells you what to install.
+The helper scripts and reference files live under the skill directory, which may
+not be your working directory. Set a shortcut once so every command below
+resolves no matter where you `cd`:
+
+```bash
+SKILL=.claude/skills/zoho-bugbounty-hunter   # adjust if your skills dir differs
+"$SKILL/scripts/setup_tools.sh" --check      # which tools are present/missing
+```
+
+`"$SKILL/scripts/setup_tools.sh" --install` (in your lab, not on a host you care
+about) bootstraps the **package-manager** tools (7-Zip, unzip, Java, nmap, and —
+via pip — Semgrep, mitmproxy). The rest (jadx, Ghidra, CodeQL, the decompiler
+JARs, apktool, projectdiscovery httpx/subfinder/nuclei) are fetched from the
+links `--check` prints. The skill degrades gracefully: each script checks for its
+tools and tells you what is missing. All reference paths below (`references/...`)
+are relative to `$SKILL`.
 
 ## The gates
 
@@ -87,7 +101,11 @@ confirmed by the operator. If any fails, stop and explain why you cannot proceed
 
 See `references/00-scope-and-authorization.md` for the full scope list,
 out-of-scope classes (so you don't waste effort on ineligible findings), and the
-legal/safe-harbor framing.
+legal reality: the Zoho VRP grants **no safe harbor**. Participation is a binding
+agreement with a liability-limitation clause and a license of your submissions to
+Zoho; out-of-bounds activity (DoS, non-consented testing, acting outside scope)
+can carry real legal consequences. Your only protection is staying in scope,
+testing with consent, and re-reading the live terms before you start.
 
 ## Working-file convention
 
@@ -95,11 +113,12 @@ Keep all run artifacts under a per-engagement directory the operator names,
 e.g. `engagements/<product>-<date>/`:
 
 ```
-engagements/<product>-<date>/
+engagements/<product>-<date>/   # cd here after Gate 0; paths below are relative to it
 ├── scope.md            # frozen copy of Gate 0 answers
 ├── recon/              # Gate 2 output
 ├── lab/                # Gate 3 VM notes, snapshot ids
-├── extracted/          # Gate 4 decompiled source (treat as UNTRUSTED input)
+├── extracted/          # Gate 4 raw unpack + per-jar decompiler output (_installer/, src/) — UNTRUSTED
+├── src/                # Gate 4 normalized, grep-able source tree — what Gate 5 scans
 ├── sast/               # Gate 5 reports
 ├── findings.md         # running list, one block per candidate
 └── reports/            # Gate 7 final submissions

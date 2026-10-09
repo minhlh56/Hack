@@ -18,6 +18,13 @@ mitmproxy --mode regular --listen-port 8080     # or Burp Suite
 # configure the lab VM / your browser to use the proxy
 ```
 
+**Mobile targets** (the Gate 1 mobile path skips the VM lab) need a runtime to
+validate against: run the APK/IPA in an emulator (Android Studio AVD / a test
+device) or simulator, point it at the proxy above, and install the proxy's CA so
+TLS can be inspected. Expect certificate pinning on hardened apps — be ready to
+patch/repackage with the Gate 4 `apktool` output or use a Frida pinning-bypass on
+your own test device. From there, validate Gate 5 candidates exactly as below.
+
 ## 6.2 Validate by class (minimal, benign PoCs)
 
 Design PoCs that **prove** the bug without causing harm. Use benign markers, your

@@ -13,7 +13,9 @@ set -euo pipefail
 SRC="${1:?usage: sast_scan.sh <src-dir> <out-dir>}"
 OUT="${2:?usage: sast_scan.sh <src-dir> <out-dir>}"
 mkdir -p "$OUT"
-g() { grep -rniE --include=*.{java,jsp,js,xml,properties,conf,json} "$1" "$SRC" 2>/dev/null; }
+# NOTE: `|| true` is REQUIRED — under `set -e` a zero-match grep (exit 1) would
+# otherwise abort the whole script mid-scan and silently truncate the SAST gate.
+g() { grep -rniE --include=*.{java,jsp,js,xml,properties,conf,json} "$1" "$SRC" 2>/dev/null || true; }
 
 echo "[*] 1/4 secrets"
 {
@@ -27,13 +29,13 @@ echo "    -> $OUT/secrets-grep.txt ($(wc -l < "$OUT/secrets-grep.txt") hits)"
 echo "[*] 2/4 dangerous sinks"
 {
   echo "### command execution";      g 'Runtime\.getRuntime\(\)\.exec|new ProcessBuilder'
-  echo "### sql (string-built)";      g 'createStatement\(|Statement .*execute|"\s*\+\s*.*(select|insert|update|delete)'
+  echo "### sql (string-built)";      g 'createStatement\(|Statement .*execute|"[[:space:]]*\+[[:space:]]*.*(select|insert|update|delete)'
   echo "### deserialization";         g 'ObjectInputStream|readObject|XMLDecoder|XStream|readUnshared|SerializationUtils\.deserialize'
   echo "### xxe";                      g 'DocumentBuilderFactory|SAXParserFactory|XMLInputFactory|TransformerFactory|SAXReader'
   echo "### ssrf";                     g 'new URL\(|HttpURLConnection|RestTemplate|WebClient|OkHttpClient|HttpClients?\.'
   echo "### path / file / upload";     g 'new File\(|Files\.(copy|write|newOutputStream)|getRealPath|MultipartFile'
   echo "### ssti / expression";        g 'freemarker|velocity|SpelExpressionParser|ScriptEngine|OgnlUtil|Thymeleaf'
-  echo "### auth bypass smells";       g 'skipAuth|bypass|isAdmin|DISABLE_AUTH|debug\s*=\s*true|== *null'
+  echo "### auth bypass smells";       g 'skipAuth|bypass|isAdmin|DISABLE_AUTH|debug[[:space:]]*=[[:space:]]*true|== *null'
 } > "$OUT/sinks.txt"
 echo "    -> $OUT/sinks.txt ($(grep -cvE '^###|^$' "$OUT/sinks.txt") hits)"
 

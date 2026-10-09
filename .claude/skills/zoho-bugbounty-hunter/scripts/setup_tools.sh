@@ -22,6 +22,9 @@ declare -A TOOLS=(
   [mitmproxy]="mitmproxy (intercept/replay)"
   [codeql]="CodeQL CLI (deep taint analysis) https://github.com/github/codeql-cli-binaries"
   [ilspycmd]="ILSpy CLI (.NET decompiler) dotnet tool install -g ilspycmd"
+  [ghidra]="Ghidra (native ELF/PE RE) https://ghidra-sre.org"
+  [apktool]="apktool (Android resources/smali) https://apktool.org"
+  [npx]="Node/npx (for '@electron/asar extract' on Electron thick clients)"
 )
 
 # Standalone JARs the skill expects under $TOOLS_DIR (set or default ~/.bb-tools)
@@ -59,7 +62,9 @@ install() {
   elif have brew; then
     brew install p7zip unzip openjdk nmap || true
   elif have dnf; then
-    sudo dnf install -y p7zip unzip java-latest-openjdk nmap python3-pip || true
+    # p7zip alone ships only 7za/7zr on Fedora/RHEL; p7zip-plugins (or the modern
+    # 7zip pkg) provides the `7z` binary the scripts call.
+    sudo dnf install -y p7zip p7zip-plugins unzip java-latest-openjdk nmap python3-pip || true
   fi
   have pip3 && pip3 install --user semgrep mitmproxy || true
   echo "[*] projectdiscovery tools (httpx/subfinder/nuclei): install via 'go install' or release binaries."

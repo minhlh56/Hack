@@ -61,7 +61,10 @@ Filter candidates against this list *before* investing in a PoC:
   impact.
 - Hosting malware; **known-vulnerable libraries without evidence of
   exploitability** (you must prove a working exploit path).
-- Pricing / paid-feature bypasses; SPF/DKIM/DMARC issues; password-policy issues.
+- Pricing / paid-feature bypasses; SPF/DKIM/DMARC/BIMI issues; password-policy issues.
+- Tapjacking without a sensitive or state-changing action; EXIF/metadata retained
+  in uploaded files; Unicode/Punycode/RTLO homograph "phishing"; non-critical
+  issues on product blogs (e.g. `blog.zoho.com`).
 - Zero-days in third-party software within 10 days of disclosure.
 - Issues affecting only old versions, or only rooted/jailbroken devices.
 - Intended features (queries/scripts/workflows run by privileged users).
@@ -97,6 +100,32 @@ of a duplicate wins.
 - Must include: vulnerability description, **clear reproduction steps**, and a
   **proof-of-concept**.
 - Zoho aims to validate within ~3 days; you may confirm the fix later.
+- First valid report of a duplicate wins.
+
+### Payout & claim window (verify against the live page)
+
+- India: INR by wire transfer, after 10% TDS is deducted. Outside India: USD via
+  PayPal, or a USD Amazon gift card.
+- **Claim an awarded bounty within 3 months** of becoming entitled to it.
+- You are responsible for any taxes on bounties.
+
+## Legal reality — there is NO safe harbor
+
+Do not assume the protection many other programs offer. The Zoho VRP page does
+**not** grant a safe harbor:
+
+- Taking part is a **binding agreement** to the program terms, which include a
+  liability-limitation clause.
+- By submitting, you grant Zoho a non-exclusive, irrevocable, worldwide,
+  perpetual, royalty-free **license** to use your submission.
+- Acting outside these rules (DoS, non-consented testing, touching other users'
+  data, going out of scope) is not shielded and can carry **real legal
+  consequences** — and gets you terminated from the program.
+
+Your only real protection is behavioral: stay strictly in scope, test only with
+your own/consented accounts, keep PoCs benign, and **re-read the live terms
+before each engagement** — this file is a cached snapshot, the page at
+<https://bugbounty.zohocorp.com/bb/info> is the authority.
 
 ## Gate exit criteria
 

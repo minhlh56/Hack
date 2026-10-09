@@ -57,4 +57,4 @@ echo "[*] decompiled $ok/$count archive(s) into $OUT"
 echo "[*] endpoint/handler map:"
 grep -rilE '@(Request|Get|Post|Put|Delete)Mapping|extends HttpServlet|<servlet-mapping>|struts' \
      "$OUT" 2>/dev/null | tee "$OUT/_endpoint-files.txt" | head -20 || true
-echo "[*] next: scripts/sast_scan.sh \"$OUT\" <sast-out-dir>"
+echo "[*] next: $(dirname "$0")/sast_scan.sh \"$OUT\" <sast-out-dir>"

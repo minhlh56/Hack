@@ -6,8 +6,8 @@ legitimate reverse engineering of software the vendor invited you to test under
 the VRP — but keep the extracted tree quarantined (see hygiene note) and use it
 only to find and report bugs.
 
-Driver script: `scripts/extract_installer.sh` (unpacks installers) and
-`scripts/decompile.sh` (runs the decompilers). Both are defensive wrappers that
+Driver script: `$SKILL/scripts/extract_installer.sh` (unpacks installers) and
+`$SKILL/scripts/decompile.sh` (runs the decompilers). Both are defensive wrappers that
 pick the right tool from the file type and keep output in a quarantined dir.
 
 ## 4.0 Hygiene (mandatory)
@@ -28,11 +28,11 @@ archiver can usually open them.
 
 ```bash
 # Try, in order of success rate:
-7z x product.bin -o extracted/_installer           # 7-Zip handles the stub+offset best
+7z x product.bin -oextracted/_installer            # 7-Zip handles the stub+offset best (NB: -o has NO space before the path)
 # or
 unzip -o product.exe -d extracted/_installer        # works when the stub is thin
 # or, if the ZIP central directory is at an offset the tool won't find:
-scripts/extract_installer.sh product.bin extracted/_installer   # scans for the PK header
+"$SKILL/scripts/extract_installer.sh" product.bin extracted/_installer   # scans for the PK header ($SKILL set in SKILL.md)
 ```
 
 If the archive won't open directly, the fallback is a **silent install in the
@@ -66,7 +66,7 @@ diffing recovers far more than any single tool.
 
 ```bash
 # batch every JAR in the extracted tree with the preferred decompiler + fallback
-scripts/decompile.sh extracted/_installer extracted/src
+"$SKILL/scripts/decompile.sh" extracted/_installer extracted/src
 ```
 
 Tips:
@@ -81,9 +81,12 @@ Tips:
 
 - **.NET (.exe/.dll)** — `ilspycmd app.dll -o out/` (ILSpy CLI) or dnSpy (GUI).
   Watch for config in `app.config` / embedded resources.
-- **Native ELF/PE (C/C++)** — load in **Ghidra** (headless:
-  `analyzeHeadless <proj> -import binary -postScript DecompileToC.java`). Export
-  pseudo-C for the functions reachable from network input.
+- **Native ELF/PE (C/C++)** — load in **Ghidra**. Headless needs a project
+  *location* **and** *name* (two positionals), plus your own post-script:
+  `analyzeHeadless <projDir> <projName> -import <binary> -scriptPath <scriptDir> -postScript DumpDecompiledC.java`.
+  Ghidra ships no `DecompileToC.java`, so either write a tiny FlatDecompilerAPI
+  post-script or just `-import` to auto-analyze and read the pseudo-C in the GUI.
+  Export pseudo-C for the functions reachable from network input.
 - **Android `.apk`** — `jadx -d out/ app.apk` for Java; `apktool d app.apk` for
   resources/smali and `AndroidManifest.xml` (exported components, deep links).
 - **iOS `.ipa`** — unzip, analyze the Mach-O with Ghidra/Hopper; focus on

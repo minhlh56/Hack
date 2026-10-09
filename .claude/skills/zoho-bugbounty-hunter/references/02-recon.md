@@ -62,5 +62,9 @@ Write `recon/surface.md`:
 
 - Attack surface mapped; pre-auth endpoints flagged.
 - No prohibited intrusive testing performed against production.
-- Priority target list written for Gates 5/6. Proceed to Gate 3 (on-prem/thick)
-  or jump to Gate 6 (pure cloud app).
+- Priority target list written for Gates 5/6. Next gate by Gate 1 path:
+  **cloud app** → Gate 6 (no install/decompile); **on-prem** → Gate 3, where the
+  deep local recon in section B is performed and fed back here. (Thick-client and
+  mobile targets do not pass through this gate — per Gate 1 they enter at Gate 3
+  and Gate 4 respectively.) Recon and decompilation keep feeding each other
+  whichever path you are on.

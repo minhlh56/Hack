@@ -4,7 +4,9 @@ Audit the quarantined `src/` from Gate 4. Goal: a ranked list of **candidate**
 vulnerabilities with a concrete source→sink hypothesis each. Static findings are
 leads, not reports — the program requires a working PoC, which Gate 6 produces.
 
-Driver: `scripts/sast_scan.sh engagements/<product>-<date>/src engagements/<product>-<date>/sast`
+Driver: `"$SKILL/scripts/sast_scan.sh" engagements/<product>-<date>/src engagements/<product>-<date>/sast`
+(`$SKILL` = the skill dir, set once in SKILL.md. Requires GNU grep; on macOS
+`brew install grep` and use `ggrep`, or the `\s`-style classes below won't match.)
 
 > Run all scanners **offline** against local files. Do not upload the vendor's
 > source to any third-party SaaS analyzer.
@@ -31,7 +33,7 @@ Map user-reachable input to dangerous sinks. Prioritize sinks reachable
 # Command execution
 grep -rniE 'Runtime\.getRuntime\(\)\.exec|ProcessBuilder|getRuntime\(\).exec' src/
 # SQL injection (string-built queries)
-grep -rniE 'createStatement\(\)|Statement\s|"\s*\+\s*.*(select|insert|update|delete)' src/
+grep -rniE 'createStatement\(\)|Statement[[:space:]]|"[[:space:]]*\+[[:space:]]*.*(select|insert|update|delete)' src/
 # Deserialization (CWE-502)
 grep -rniE 'ObjectInputStream|readObject|XMLDecoder|XStream|readUnshared|SerializationUtils\.deserialize' src/
 # XXE

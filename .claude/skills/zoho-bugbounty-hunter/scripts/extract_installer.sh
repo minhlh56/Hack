@@ -39,7 +39,10 @@ if [ "${FOUND:-0}" -ne 1 ]; then
   if [ -n "${OFF:-}" ]; then
     echo "[*] ZIP data appears at offset $OFF; carving…"
     CARVED="$OUT/_carved.zip"
-    dd if="$SRC" of="$CARVED" bs=1 skip="$OFF" status=none
+    # OFF is 0-indexed; tail's byte count is 1-indexed. Use tail (fast, portable)
+    # not `dd bs=1` — a 1-byte block size turns a multi-hundred-MB InstallAnywhere
+    # payload into hundreds of millions of syscalls and effectively hangs.
+    tail -c +"$((OFF+1))" "$SRC" > "$CARVED"
     if command -v 7z >/dev/null 2>&1; then 7z x -y -o"$OUT" "$CARVED" >/dev/null 2>&1 && FOUND=1
     elif command -v unzip >/dev/null 2>&1; then unzip -o -q "$CARVED" -d "$OUT" >/dev/null 2>&1 && FOUND=1; fi
     [ "${FOUND:-0}" -eq 1 ] && echo "[ok] extracted carved ZIP" && rm -f "$CARVED"
@@ -59,4 +62,4 @@ fi
 echo "[*] inventory of interesting artifacts:"
 echo "    JAR/WAR:"; find "$OUT" -type f \( -iname '*.jar' -o -iname '*.war' \) | head -40
 echo "    configs:"; find "$OUT" -type f \( -iname '*.properties' -o -iname '*.xml' -o -iname '*.conf' \) | head -40
-echo "[*] next: scripts/decompile.sh \"$OUT\" <src-out-dir>"
+echo "[*] next: $(dirname "$0")/decompile.sh \"$OUT\" <src-out-dir>"
